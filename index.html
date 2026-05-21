@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis XV Años - Nombre de tu princesa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Pinyon+Script&family=Montserrat:wght@300;400;500&family=Cormorant+Garamond:ital@1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta Rapunzel: Tonos lilas, morados profundos y dorado mágico */
+            --bg-dark: #1f0d2b; 
+            --bg-bayou: linear-gradient(135deg, #1f0d2b 0%, #4a2c6d 100%);
+            --gold-primary: #ffd700; /* Dorado sol */
+            --gold-secondary: #d4af37;
+            --text-light: #fdf5e6;
+            --text-muted: #d8b4e2; /* Lila suave */
+            --magic-glow: rgba(255, 215, 0, 0.4);
+            --lantern-glow: rgba(255, 180, 50, 0.6); /* Brillo cálido de linterna */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* Estilos del Sobre Animado (Pantalla de Entrada) */
+        #envelope-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-bayou);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.2s ease-in-out, visibility 1.2s;
+            overflow: hidden;
+        }
+
+        #envelope-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            cursor: pointer;
+            transform: scale(0.9);
+            transition: transform 0.5s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(0.95);
+        }
+
+        .envelope {
+            position: relative;
+            width: 340px;
+            height: 240px;
+            background: #3e205a; /* Morado del sobre */
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-right: 170px solid #2f1745;
+            border-top: 120px solid transparent;
+            border-bottom: 120px solid #2f1745;
+            border-radius: 0 0 8px 0;
+            z-index: 2;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 170px solid #361a4f;
+            border-top: 120px solid transparent;
+            border-bottom: 120px solid #361a4f;
+            border-radius: 0 0 0 8px;
+            z-index: 2;
+        }
+
+        .front-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 170px solid transparent;
+            border-right: 170px solid transparent;
+            border-top: 130px solid #422361;
+            transform-origin: top;
+            transition: transform 0.6s ease 0.2s;
+            z-index: 4;
+        }
+
+        .envelope-wrapper.open .front-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .wax-seal {
+            position: absolute;
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ffd700 0%, #b8860b 100%);
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
+            transition: transform 0.4s ease, opacity 0.4s ease 0.4s;
+        }
+
+        .wax-seal svg {
+            width: 32px;
+            height: 32px;
+            fill: #4a2c6d;
+        }
+
+        .envelope-wrapper.open .wax-seal {
+            transform: translateX(-50%) scale(0);
+            opacity: 0;
+        }
+
+        .envelope-text {
+            position: absolute;
+            bottom: -50px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            color: var(--gold-primary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .hint-text {
+            position: absolute;
+            bottom: -80px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+
+        /* Contenido de la Invitación Principal */
+        #main-invitation {
+            min-height: 100vh;
+            background: url('assets/fondo.jpg') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease-out 0.6s, transform 1.5s ease-out 0.6s;
+        }
+
+        body.content-active #main-invitation {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .invitation-frame {
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid var(--gold-primary);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            background: rgba(31, 13, 43, 0.8); /* Fondo con ligera transparencia lila oscuro */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            border-image: linear-gradient(to bottom, var(--gold-primary), rgba(216, 180, 226, 0.2), var(--gold-primary)) 1;
+        }
+
+        /* Elementos Decorativos */
+        .lotus-header {
+            margin-bottom: 20px;
+        }
+
+        .lotus-header svg {
+            width: 65px;
+            height: 65px;
+            fill: var(--gold-primary);
+            filter: drop-shadow(0 0 8px var(--magic-glow));
+        }
+
+        /* Tipografía */
+        .section-tag {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .main-title {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 60px;
+            color: var(--gold-primary);
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+            line-height: 1.1;
+        }
+
+        .phrase {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 17px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 35px;
+            padding: 0 15px;
+            opacity: 0.9;
+        }
+
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold-primary), transparent);
+            margin: 25px auto;
+        }
+
+        /* Bloque de Información Destacada */
+        .info-grid {
+            margin-top: 30px;
+        }
+
+        .info-block {
+            margin-bottom: 30px;
+        }
+
+        .info-label {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .info-value-main {
+            font-family: 'Cinzel', serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 2px;
+        }
+
+        .info-value-sub {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        /* Linternas Flotantes (Fondo Mágico Enredados) */
+        .lantern {
+            position: absolute;
+            background-color: #ffda75; /* Color más cálido */
+            border-radius: 2px; /* Ligeramente rectangulares como linternas */
+            pointer-events: none;
+            box-shadow: 0 0 15px 5px var(--lantern-glow);
+            animation: float-up infinite ease-in;
+            opacity: 0;
+        }
+
+        /* Animaciones */
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.4; }
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0) translateX(0) scale(0.5);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.8;
+            }
+            85% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(30px) scale(1.1);
+                opacity: 0;
+            }
+        }
+
+        /* Responsivo */
+        @media (max-width: 400px) {
+            .envelope {
+                width: 290px;
+                height: 210px;
+            }
+            .envelope::before { border-right-width: 145px; border-top-width: 105px; border-bottom-width: 105px; }
+            .envelope::after { border-left-width: 145px; border-top-width: 105px; border-bottom-width: 105px; }
+            .front-flap { border-left-width: 145px; border-right-width: 145px; border-top-width: 115px; }
+            .wax-seal { top: 95px; }
+            .main-title { font-size: 48px; }
+            .invitation-frame { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla del Sobre -->
+    <div id="envelope-screen">
+        <div class="envelope-wrapper" onclick="openEnvelope()">
+            <div class="front-flap"></div>
+            <div class="wax-seal">
+                <!-- Icono de Corona de Princesa -->
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.55 18.55 20 18 20H6C5.45 20 5 19.55 5 19V18H19V19Z"/>
+                </svg>
+            </div>
+            <div class="envelope"></div>
+            <div class="envelope-text">Mis XV Años<br><span style="color: #fff; font-size: 16px; letter-spacing: 5px;">Nombre de tu princesa</span></div>
+            <div class="hint-text">Toca el sello para abrir</div>
+        </div>
+    </div>
+
+    <!-- Contenido de la Invitación Principal -->
+    <main id="main-invitation">
+        <!-- Contenedor para las linternas mágicas dinámicas -->
+        <div id="lanterns-container" style="position: absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; pointer-events:none; z-index:1;"></div>
+
+        <div class="invitation-frame" style="z-index: 2;">
+            <div class="lotus-header">
+                <!-- Icono de Corona de Princesa -->
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.55 18.55 20 18 20H6C5.45 20 5 19.55 5 19V18H19V19Z"/>
+                </svg>
+            </div>
+
+            <div class="section-tag">Mis XV Años</div>
+            <h1 class="main-title">Nombre de tu princesa</h1>
+            
+            <p class="phrase">
+                "Y por fin ya veo la luz... Hoy mi vida empieza a brillar y quiero compartir este momento mágico con las personas que más quiero."
+            </p>
+
+            <div class="divider"></div>
+
+            <div class="info-grid">
+                <div class="info-block">
+                    <div class="info-label">Fecha</div>
+                    <div class="info-value-main">Fecha del evento</div>
+                    <div class="info-value-sub">Día de Celebración</div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="info-block">
+                    <div class="info-label">Lugar</div>
+                    <div class="info-value-main">Lugar de tu evento</div>
+                    <div class="info-value-sub">Recepción Real</div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            
+            <div style="font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; color: var(--gold-secondary); margin-top: 20px;">
+                INVYTIA PREVIEW DATA
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function openEnvelope() {
+            const wrapper = document.querySelector('.envelope-wrapper');
+            const screen = document.getElementById('envelope-screen');
+            
+            // Activar animación del sobre
+            wrapper.classList.add('open');
+            
+            // Transición a la invitación principal
+            setTimeout(() => {
+                screen.classList.add('fade-out');
+                document.body.classList.add('content-active');
+                createLanterns();
+            }, 1200);
+        }
+
+        function createLanterns() {
+            const container = document.getElementById('lanterns-container');
+            const count = 20; // Ajustado para que se vea elegante y no saturado
+            
+            for (let i = 0; i < count; i++) {
+                const lantern = document.createElement('div');
+                lantern.classList.add('lantern');
+                
+                // Propiedades aleatorias para naturalidad de las linternas
+                const width = Math.random() * 6 + 4;
+                const height = width * 1.5; // Forma ligeramente rectangular
+                const left = Math.random() * 100;
+                const animDuration = Math.random() * 10 + 8; // Vuelo más lento y majestuoso
+                const animDelay = Math.random() * 8;
+                
+                lantern.style.width = `${width}px`;
+                lantern.style.height = `${height}px`;
+                lantern.style.left = `${left}%`;
+                lantern.style.bottom = `-30px`;
+                lantern.style.animationDuration = `${animDuration}s`;
+                lantern.style.animationDelay = `${animDelay}s`;
+                
+                container.appendChild(lantern);
+            }
+        }
+    </script>
+</body>
+</html>
